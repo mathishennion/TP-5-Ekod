@@ -1,0 +1,24 @@
+meta {
+  name: 03 - Modifier une tache
+  type: http
+  seq: 3
+}
+
+put {
+  url: http://localhost:3000/tasks/4
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "titre": "Faire Exo5 ",
+    "complete": true,
+    "assignee": "Mivren"
+
+  }
+}

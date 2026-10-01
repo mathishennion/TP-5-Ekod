@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "eslint": "^10.11.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2"
+  },
+  "scripts": {
+    "lint": "npm --prefix frontend run lint"
+  }
+}
