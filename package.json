@@ -1,15 +1,9 @@
 {
-  "name": "tasks-api",
-  "version": "1.0.0",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js",
-    "lint": "npm --prefix frontend run lint"
+  "devDependencies": {
+    "eslint": "^10.11.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2"
   },
-  "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.19.2",
-    "joi": "^18.2.9",
-    "pg": "^8.13.1"
+  "scripts": {
+    "lint": "npm --prefix frontend run lint"
   }
 }

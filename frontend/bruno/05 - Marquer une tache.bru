@@ -1,0 +1,26 @@
+meta {
+  name: 05 - Marquer une tache
+  type: http
+  seq: 0
+}
+
+patch {
+  url: http://localhost:3000/tasks/1/completed
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "complete": true
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

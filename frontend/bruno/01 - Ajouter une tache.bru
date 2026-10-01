@@ -1,0 +1,22 @@
+meta {
+  name: 01 - Ajouter une tache
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:3000/tasks
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "titre": "Faire TP5",
+    "assignee": "Zorali"
+  }
+}

@@ -1,13 +1,20 @@
 {
-  "name": "tasks-frontend",
+  "name": "tasks-api",
   "version": "1.0.0",
+  "description": "API REST simple de gestion de tâches (TP 3)",
+  "main": "server.js",
   "scripts": {
+    "start": "node server.js",
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "joi": "^18.2.9",
+    "pg": "^8.13.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
