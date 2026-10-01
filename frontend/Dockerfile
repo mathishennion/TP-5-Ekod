@@ -1,12 +1,11 @@
 FROM node:22-alpine
-
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install --omit=dev
+RUN npm install --omit=dev --legacy-peer-deps
 
-COPY . .
+COPY server.js ./
 
 EXPOSE 3000
 USER node
-CMD ["npm", "start"]
+CMD ["node", "server.js"]

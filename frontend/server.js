@@ -4,19 +4,31 @@ const { Pool } = require('pg');
 const Joi = require('joi');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-const pool = new Pool({
-  host: process.env.DB_HOST || 'localhost',
-  port: Number(process.env.DB_PORT || 5432),
-  database: process.env.DB_NAME,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD
-});
+const allowedOrigins = [
+  'http://localhost:5173',
+  process.env.FRONTEND_ORIGIN,
+  process.env.NETLIFY_SITE_URL,
+].filter(Boolean);
+
+const pool = new Pool(
+  process.env.DATABASE_URL
+    ? {
+        connectionString: process.env.DATABASE_URL,
+        ssl: { rejectUnauthorized: false },
+      }
+    : {
+        host: process.env.DB_HOST || 'localhost',
+        port: Number(process.env.DB_PORT || 5432),
+        database: process.env.DB_NAME,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+      }
+);
 
 // Middleware pour parser le JSON envoyé dans le corps des requêtes
 app.use(cors({
   origin: (origin, callback) => {
-    callback(null, origin === 'http://localhost:5173');
+    callback(null, !origin || allowedOrigins.includes(origin));
   }
 }));
 app.use(express.json());
@@ -176,6 +188,7 @@ app.use((error, req, res, _next) => {
   res.status(500).json({ error: 'Erreur interne du serveur.' });
 });
 
-app.listen(PORT, () => {
-  console.log(`Serveur démarré sur http://localhost:${PORT}`);
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Serveur démarré sur http://localhost:${port}`);
 });
