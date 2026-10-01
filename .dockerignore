@@ -1,0 +1,9 @@
+node_modules
+frontend
+bruno
+db-init
+.env
+.env.*
+.git
+dist
+*.log
