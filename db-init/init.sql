@@ -5,7 +5,6 @@ CREATE TABLE IF NOT EXISTS tasks (
     assignee VARCHAR(50)
 );
 
-ALTER TABLE tasks DROP COLUMN IF EXISTS prenom_tasks;
 ALTER TABLE tasks ADD COLUMN IF NOT EXISTS assignee VARCHAR(50);
 
 INSERT INTO tasks (titre_tasks, status_tasks, assignee)
