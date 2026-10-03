@@ -6,9 +6,12 @@ const Joi = require('joi');
 const app = express();
 const allowedOrigins = [
   'http://localhost:5173',
+  process.env.CORS_ORIGIN,
   process.env.FRONTEND_ORIGIN,
   process.env.NETLIFY_SITE_URL,
-].filter(Boolean);
+]
+  .filter(Boolean)
+  .map((origin) => origin.replace(/\/+$/, ''));
 
 const pool = new Pool(
   process.env.DATABASE_URL
@@ -44,12 +47,12 @@ const assigneeSchema = Joi.string()
   .allow('', null);
 
 const createTaskSchema = Joi.object({
-  titre: Joi.string().trim().min(1).max(100).required(),
+  titre: Joi.string().trim().min(1).max(255).required(),
   assignee: assigneeSchema
 }).unknown(false);
 
 const updateTaskSchema = Joi.object({
-  titre: Joi.string().trim().min(1).max(100),
+  titre: Joi.string().trim().min(1).max(255),
   complete: Joi.boolean(),
   assignee: assigneeSchema
 }).min(1).unknown(false);
@@ -89,9 +92,11 @@ app.get('/tasks', asyncRoute(async (req, res) => {
   const result = await pool.query('SELECT * FROM tasks ORDER BY num_tasks');
   let tasks = result.rows.map(toTask);
 
-  if (req.query.completed === 'True') {
+  // Filtre : ?status=completed | pending (l'ancien ?completed=True|False reste accepté)
+  const { status, completed } = req.query;
+  if (status === 'completed' || completed === 'True') {
     tasks = tasks.filter((task) => task.completed);
-  } else if (req.query.completed === 'False') {
+  } else if (status === 'pending' || completed === 'False') {
     tasks = tasks.filter((task) => !task.completed);
   }
 

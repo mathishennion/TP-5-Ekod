@@ -22,6 +22,14 @@ function getErrorMessage(error) {
   return error.message || 'Une erreur inattendue est survenue.'
 }
 
+const FILTERS = [
+  { value: 'all', label: 'Toutes' },
+  { value: 'pending', label: 'À faire' },
+  { value: 'completed', label: 'Terminées' },
+]
+
+const MAX_TITLE_LENGTH = 255
+
 function App() {
   const [tasks, setTasks] = useState([])
   const [title, setTitle] = useState('')
@@ -31,6 +39,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(true)
   const [isBusy, setIsBusy] = useState(false)
   const [reloadKey, setReloadKey] = useState(0)
+  const [filter, setFilter] = useState('all')
 
   useEffect(() => {
     const controller = new AbortController()
@@ -39,7 +48,8 @@ function App() {
       setIsLoading(true)
 
       try {
-        const result = await request('/tasks', { signal: controller.signal })
+        const query = filter === 'all' ? '' : `?status=${filter}`
+        const result = await request(`/tasks${query}`, { signal: controller.signal })
 
         if (!Array.isArray(result)) {
           throw new Error('La réponse de l’API n’est pas une liste de tâches.')
@@ -57,7 +67,7 @@ function App() {
 
     loadTasks()
     return () => controller.abort()
-  }, [reloadKey])
+  }, [reloadKey, filter])
 
   async function addTask(event) {
     event.preventDefault()
@@ -68,7 +78,13 @@ function App() {
       return
     }
 
+    if (trimmedTitle.length > MAX_TITLE_LENGTH) {
+      setTitleError(`Le titre ne doit pas dépasser ${MAX_TITLE_LENGTH} caractères.`)
+      return
+    }
+
     setTitleError('')
+    setNotice(null)
     setIsBusy(true)
     try {
       await request('/tasks', {
@@ -78,6 +94,7 @@ function App() {
       })
       setTitle('')
       setAssignee('')
+      setNotice({ type: 'success', text: `La tâche « ${trimmedTitle} » a été ajoutée.` })
       setReloadKey((key) => key + 1)
     } catch (error) {
       setNotice({ type: 'error', text: getErrorMessage(error) })
@@ -87,12 +104,17 @@ function App() {
   }
 
   async function toggleTask(task) {
+    setNotice(null)
     setIsBusy(true)
     try {
       await request(`/tasks/${task.id}/completed`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ complete: !task.completed }),
+      })
+      setNotice({
+        type: 'success',
+        text: `La tâche « ${task.titre} » est marquée comme ${task.completed ? 'à faire' : 'terminée'}.`,
       })
 
       setReloadKey((key) => key + 1)
@@ -104,9 +126,11 @@ function App() {
   }
 
   async function deleteTask(task) {
+    setNotice(null)
     setIsBusy(true)
     try {
       await request(`/tasks/${task.id}`, { method: 'DELETE' })
+      setNotice({ type: 'success', text: `La tâche « ${task.titre} » a été supprimée.` })
       setReloadKey((key) => key + 1)
     } catch (error) {
       setNotice({ type: 'error', text: getErrorMessage(error) })
@@ -116,6 +140,7 @@ function App() {
   }
 
   async function removeAssignee(task) {
+    setNotice(null)
     setIsBusy(true)
     try {
       await request(`/tasks/${task.id}`, {
@@ -123,6 +148,7 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ assignee: null }),
       })
+      setNotice({ type: 'success', text: `Le bénévole a été retiré de la tâche « ${task.titre} ».` })
       setReloadKey((key) => key + 1)
     } catch (error) {
       setNotice({ type: 'error', text: getErrorMessage(error) })
@@ -142,7 +168,7 @@ function App() {
           </div>
           <p className="task-total" aria-live="polite">
             <strong>{tasks.length}</strong>
-            <span>{tasks.length > 1 ? 'nombre tâches' : 'nombre tâche'}</span>
+            <span>{tasks.length > 1 ? 'tâches affichées' : 'tâche affichée'}</span>
           </p>
         </div>
       </header>
@@ -162,11 +188,12 @@ function App() {
                 if (event.target.value.trim()) setTitleError('')
               }}
               placeholder="Ex. Préparer la réunion"
-              maxLength={100}
+              maxLength={MAX_TITLE_LENGTH}
               aria-required="true"
               aria-invalid={titleError ? 'true' : undefined}
               aria-describedby={titleError ? 'task-title-error' : undefined}
             />
+            {titleError && <p className="field-error" id="task-title-error" role="alert">{titleError}</p>}
           </div>
           <div className="form-field">
             <label htmlFor="task-assignee">Prénom du bénévole (facultatif)</label>
@@ -185,15 +212,27 @@ function App() {
             {isBusy ? 'En cours…' : 'Ajouter'}
           </button>
         </form>
-        {titleError && <p className="field-error" id="task-title-error" role="alert">{titleError}</p>}
         <p className="privacy-notice">
-          L’association collecte ce prénom uniquement pour indiquer qui s’occupe de la tâche. Il est conservé jusqu’à la suppression de la tâche. Vous pouvez le retirer avec le bouton « Retirer le bénévole » ou demander son effacement à contact@association.example.
+          L’association collecte ce prénom uniquement pour indiquer quel bénévole s’occupe de la tâche. Il est conservé jusqu’à la suppression de la tâche, ou jusqu’à ce que vous le retiriez avec le bouton « Retirer le bénévole ». Pour demander son effacement : contact@association.example.
         </p>
       </section>
 
       <section className="list-section" aria-labelledby="list-heading">
         <div className="list-heading-row">
           <h2 id="list-heading">Liste des tâches</h2>
+          <div className="filter-group" role="group" aria-label="Filtrer les tâches">
+            {FILTERS.map((item) => (
+              <button
+                key={item.value}
+                type="button"
+                className={`filter-button${filter === item.value ? ' is-active' : ''}`}
+                aria-pressed={filter === item.value}
+                onClick={() => setFilter(item.value)}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {notice && (

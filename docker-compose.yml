@@ -18,9 +18,10 @@ services:
 
   api:
     build:
-      context: ./frontend
+      context: .
     environment:
       PORT: 3000
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
       DB_HOST: db
       DB_PORT: 5432
       DB_USER: ${DB_USER}

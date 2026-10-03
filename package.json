@@ -1,9 +1,19 @@
 {
-  "devDependencies": {
-    "eslint": "^10.11.0",
-    "eslint-plugin-jsx-a11y": "^6.10.2"
-  },
+  "name": "tasks-api",
+  "version": "1.0.0",
+  "description": "API REST de gestion de tâches (TP 5)",
+  "main": "server.js",
   "scripts": {
+    "start": "node server.js",
     "lint": "npm --prefix frontend run lint"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^4.22.3",
+    "joi": "^18.2.9",
+    "pg": "^8.23.1"
   }
 }
