@@ -3,7 +3,7 @@
 API Node.js / PostgreSQL (à la racine) + interface React accessible (dossier `frontend`).
 
 - Frontend (Netlify) : https://tp5-ekod.netlify.app/
-- API (Render) : `https://<nom-du-service>.onrender.com` (à compléter)
+- API (Render) : https://tp-5-ekod.onrender.com/ (à compléter)
 
 ## Lancer le projet en local
 
